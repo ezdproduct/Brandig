@@ -2,19 +2,36 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const sampleProducts = [
-  { id: 1, name: "Modern Wireless Headphones", price: 129.99, image: "https://placehold.co/600x400/black/white?text=Headphones" },
-  { id: 2, name: "Classic Leather Watch", price: 249.50, image: "https://placehold.co/600x400/gray/white?text=Watch" },
-  { id: 3, name: "Smart Fitness Tracker", price: 79.00, image: "https://placehold.co/600x400/blue/white?text=Tracker" },
-  { id: 4, name: "Ergonomic Office Chair", price: 350.00, image: "https://placehold.co/600x400/green/white?text=Chair" },
-  { id: 5, name: "Portable Bluetooth Speaker", price: 59.99, image: "https://placehold.co/600x400/orange/white?text=Speaker" },
-  { id: 6, name: "Minimalist Desk Lamp", price: 45.00, image: "https://placehold.co/600x400/yellow/black?text=Lamp" },
-  { id: 7, name: "Insulated Travel Mug", price: 25.00, image: "https://placehold.co/600x400/purple/white?text=Mug" },
-  { id: 8, name: "Professional Camera Drone", price: 899.99, image: "https://placehold.co/600x400/red/white?text=Drone" },
-];
+// Define the structure of a product from the WooCommerce API
+interface WCProduct {
+  id: number;
+  name: string;
+  price: string; // WooCommerce API often returns price as a string
+  images: {
+    id: number;
+    src: string;
+    alt: string;
+  }[];
+}
+
+// A function to fetch products from our serverless proxy
+const fetchProducts = async (): Promise<WCProduct[]> => {
+  const response = await fetch('/api/products');
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
+};
 
 const Index = () => {
+  const { data: products, isLoading, isError } = useQuery<WCProduct[]>({
+    queryKey: ['products'],
+    queryFn: fetchProducts,
+  });
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -32,9 +49,38 @@ const Index = () => {
         <section className="py-16">
           <div className="container">
             <h2 className="text-3xl font-bold text-center mb-8">Featured Products</h2>
+            
+            {isLoading && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex flex-col space-y-3">
+                    <Skeleton className="h-[200px] w-full rounded-xl" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isError && (
+              <div className="text-center text-red-500">
+                <p>Failed to load products. Please try again later.</p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {sampleProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
+              {products?.map(product => (
+                <ProductCard 
+                  key={product.id} 
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: parseFloat(product.price),
+                    image: product.images[0]?.src || 'https://placehold.co/600x400'
+                  }} 
+                />
               ))}
             </div>
           </div>
