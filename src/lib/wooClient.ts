@@ -8,6 +8,7 @@ export interface WCProduct {
     src: string;
     alt: string;
   }[];
+  description: string;
   // Add other properties as needed
 }
 
@@ -19,7 +20,6 @@ export const getProducts = async (): Promise<WCProduct[]> => {
   const response = await fetch('/api/products');
   
   if (!response.ok) {
-    // You can add more sophisticated error handling here
     const errorInfo = await response.json();
     throw new Error(errorInfo.error || 'Failed to fetch products');
   }
@@ -28,13 +28,15 @@ export const getProducts = async (): Promise<WCProduct[]> => {
 };
 
 /**
- * Fetches a single product by its ID.
- * Note: This requires creating a corresponding serverless function e.g., /api/product?id=[productId]
+ * Fetches a single product by its ID using our secure serverless proxy.
  * @param id The ID of the product to fetch.
  * @returns A promise that resolves to a single product.
  */
-export const getProduct = async (id: number): Promise<WCProduct> => {
-  const response = await fetch(`/api/product?id=${id}`); // Assuming this endpoint will be created
+export const getProduct = async (id: string | undefined): Promise<WCProduct> => {
+  if (!id) {
+    throw new Error("Product ID is required.");
+  }
+  const response = await fetch(`/api/product?id=${id}`);
   
   if (!response.ok) {
     const errorInfo = await response.json();

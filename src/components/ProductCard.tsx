@@ -1,6 +1,9 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Product {
   id: number;
@@ -14,21 +17,30 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  const addItem = useCartStore((state) => state.addItem);
+
+  const handleAddToCart = () => {
+    addItem(product);
+    toast.success(`${product.name} has been added to your cart.`);
+  };
+
   return (
-    <Card className="w-full max-w-sm overflow-hidden transition-shadow duration-300 hover:shadow-lg">
-      <CardHeader className="p-0">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="object-cover w-full h-48"
-        />
-      </CardHeader>
-      <CardContent className="p-4">
-        <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
-        <p className="text-xl font-bold mt-2">${product.price.toFixed(2)}</p>
-      </CardContent>
+    <Card className="w-full max-w-sm overflow-hidden transition-shadow duration-300 hover:shadow-lg flex flex-col">
+      <Link to={`/product/${product.id}`} className="block">
+        <CardHeader className="p-0">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="object-cover w-full h-48"
+          />
+        </CardHeader>
+        <CardContent className="p-4 flex-grow">
+          <CardTitle className="text-lg font-semibold h-12">{product.name}</CardTitle>
+          <p className="text-xl font-bold mt-2">${product.price.toFixed(2)}</p>
+        </CardContent>
+      </Link>
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full">
+        <Button className="w-full" onClick={handleAddToCart}>
           <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
         </Button>
       </CardFooter>
