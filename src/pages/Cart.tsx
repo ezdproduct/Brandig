@@ -1,6 +1,6 @@
 import { useCartStore, CartItem } from "@/store/cartStore";
 import { Button } from "@/components/ui/button";
-import { Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -59,7 +59,9 @@ const Cart = () => {
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
-                <Button className="w-full mt-6">Proceed to Checkout</Button>
+                <Button asChild className="w-full mt-6">
+                  <Link to="/checkout">Proceed to Checkout</Link>
+                </Button>
                 <Button variant="outline" className="w-full mt-2" onClick={clearCart}>
                   Clear Cart
                 </Button>
