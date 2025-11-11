@@ -4,32 +4,12 @@ import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Define the structure of a product from the WooCommerce API
-interface WCProduct {
-  id: number;
-  name: string;
-  price: string; // WooCommerce API often returns price as a string
-  images: {
-    id: number;
-    src: string;
-    alt: string;
-  }[];
-}
-
-// A function to fetch products from our serverless proxy
-const fetchProducts = async (): Promise<WCProduct[]> => {
-  const response = await fetch('/api/products');
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
-};
+import { getProducts, WCProduct } from "@/lib/wooClient";
 
 const Index = () => {
-  const { data: products, isLoading, isError } = useQuery<WCProduct[]>({
+  const { data: products, isLoading, isError, error } = useQuery<WCProduct[]>({
     queryKey: ['products'],
-    queryFn: fetchProducts,
+    queryFn: getProducts, // Use the new centralized API function
   });
 
   return (
@@ -66,7 +46,8 @@ const Index = () => {
 
             {isError && (
               <div className="text-center text-red-500">
-                <p>Failed to load products. Please try again later.</p>
+                <p>Failed to load products.</p>
+                <p className="text-sm text-muted-foreground">{(error as Error)?.message}</p>
               </div>
             )}
 
